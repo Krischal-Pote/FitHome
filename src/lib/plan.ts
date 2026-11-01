@@ -49,3 +49,23 @@ export function streak(dates: string[], today = new Date()): number {
   while (set.has(day(d))) { n++; d.setDate(d.getDate() - 1); }
   return n;
 }
+
+const RUNWALK: Record<Level, [number, number]> = { beginner: [60, 120], intermediate: [120, 60], advanced: [180, 60] };
+
+export function buildWalkRun(level: Level, minutes: number, kg = 70): Workout {
+  const [run, walk] = RUNWALK[level];
+  const total = minutes * 60;
+  const warm = minutes >= 10 ? 120 : 0;
+  const cool = minutes >= 10 ? 120 : 0;
+  const steps: Step[] = [];
+  if (warm) steps.push({ name: 'Easy walk warm-up', secs: warm, rest: true });
+  let left = total - warm - cool;
+  while (left >= run + walk) {
+    steps.push({ name: 'Run', secs: run, rest: false }, { name: 'Brisk walk', secs: walk, rest: true });
+    left -= run + walk;
+  }
+  if (!steps.some((x) => !x.rest)) steps.push({ name: 'Run', secs: Math.min(run, total), rest: false });
+  if (cool) steps.push({ name: 'Easy walk cool-down', secs: cool, rest: true });
+  const sec = (rest: boolean) => steps.filter((x) => x.rest === rest).reduce((n, x) => n + x.secs, 0);
+  return { steps, kcal: Math.round(kcal(9.8, sec(false) / 60, kg) + kcal(3.8, sec(true) / 60, kg)) };
+}

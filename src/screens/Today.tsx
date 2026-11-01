@@ -1,14 +1,16 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Bar, Btn, Card, Ionicons, Title } from '../components/ui.tsx';
+import { Bar, Btn, Card, Chip, Ionicons, Title } from '../components/ui.tsx';
 import { dietPlan } from '../lib/diet.ts';
-import { buildWorkout, day, streak } from '../lib/plan.ts';
+import { buildWalkRun, buildWorkout, day, streak } from '../lib/plan.ts';
 import { c, font, sp } from '../theme.ts';
 import type { Profile, State, Workout } from '../types.ts';
 
 const L = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 export function Today({ s, p, cur, now, onStart, goDiet }: { s: State; p: Profile; cur: number; now: number; onStart: (w: Workout) => void; goDiet: () => void }) {
-  const w = buildWorkout(p.level, p.minutes, cur);
+  const [mode, setMode] = useState<'strength' | 'cardio'>('strength');
+  const w = (mode === 'cardio' ? buildWalkRun : buildWorkout)(p.level, p.minutes, cur);
   const doneToday = s.done.includes(day());
   const left = cur - p.goal;
   const diet = dietPlan(p, cur);
@@ -35,10 +37,14 @@ export function Today({ s, p, cur, now, onStart, goDiet }: { s: State; p: Profil
         </View>
       </Card>
       <Card>
+        <View style={t.week}>
+          <Chip on={mode === 'strength'} label="Bodyweight" onPress={() => setMode('strength')} />
+          <Chip on={mode === 'cardio'} label="Walk & run" onPress={() => setMode('cardio')} />
+        </View>
         <Text style={t.h2}>Today&apos;s workout</Text>
         <Text style={t.sub}>{p.minutes} min · ~{w.kcal} kcal · {p.level}</Text>
-        {w.steps.filter((x) => !x.rest).map((x, i) => (
-          <View key={i} style={t.row}><Ionicons name="barbell" size={16} color={c.muted} /><Text style={t.item}>{x.name}</Text><Text style={t.sub}>{x.secs}s</Text></View>
+        {(mode === 'cardio' ? w.steps : w.steps.filter((x) => !x.rest)).map((x, i) => (
+          <View key={i} style={t.row}><Ionicons name={mode === 'cardio' ? (x.rest ? 'walk' : 'speedometer') : 'barbell'} size={16} color={c.muted} /><Text style={t.item}>{x.name}</Text><Text style={t.sub}>{x.secs}s</Text></View>
         ))}
         <Btn icon={doneToday ? 'refresh' : 'play'} label={doneToday ? 'Done today. Go again' : 'Start workout'} onPress={() => onStart(w)} />
       </Card>
