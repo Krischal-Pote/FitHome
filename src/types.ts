@@ -10,7 +10,8 @@ export type Profile = {
   days: number[]; // expo weekday, 1 = Sunday
   time: string; // HH:MM
   // diet inputs; absent on profiles saved before diet planning existed
-  cm?: number;
+  cm?: number; // always stored in cm
+  hUnit?: 'cm' | 'm' | 'ft'; // preferred display unit
   age?: number;
   sex?: Sex;
 };
