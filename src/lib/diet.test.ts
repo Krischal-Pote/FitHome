@@ -8,4 +8,6 @@ assert(Math.abs(d.protein * 4 + d.carbs * 4 + d.fat * 9 - d.kcal) < 15); // macr
 assert(Math.abs(d.meals.reduce((s, m) => s + m.kcal, 0) - d.kcal) <= 2);
 assert(dietPlan({ ...p, goal: 90 }, 80)!.kcal > d.kcal); // gain > lose
 assert.equal(dietPlan({ ...p, cm: undefined }, 80), null); // old profile
+assert(d.meals.every((m) => m.food.length > 0));
+assert.notEqual(dietPlan(p, 80, 1)!.meals[0].food, d.meals[0].food); // rotates
 console.log('ok');

@@ -83,7 +83,7 @@ function Main() {
   const w = buildWorkout(p.level, p.minutes, cur);
   const doneToday = s.done.includes(day());
   const left = cur - p.goal;
-  const diet = dietPlan(p, cur);
+  const diet = dietPlan(p, cur, Math.floor(Date.now() / 864e5)); // rotates daily
   return (
     <SafeAreaView style={st.root}>
       <StatusBar style="light" />
@@ -101,7 +101,7 @@ function Main() {
           <View style={st.card}>
             <Text style={st.h2}>Diet: ~{diet.kcal} kcal/day</Text>
             <Text style={st.sub}>P {diet.protein}g · C {diet.carbs}g · F {diet.fat}g</Text>
-            {diet.meals.map((m) => <Text key={m.name} style={st.item}>• {m.name} — ~{m.kcal} kcal</Text>)}
+            {diet.meals.map((m) => <Text key={m.name} style={st.item}>• {m.name} (~{m.kcal} kcal): {m.food}</Text>)}
             <Text style={st.sub}>Estimate only. Not medical advice.</Text>
           </View>
         ) : (
