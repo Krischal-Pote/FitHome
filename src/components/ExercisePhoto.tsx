@@ -16,13 +16,13 @@ export function ExercisePhoto({ name, rest, paused }: { name: string; rest: bool
   return (
     <View style={s.box}>
       {frames
-        ? <Image accessibilityLabel={`${name} demonstration`} source={frames[f]} style={s.img} resizeMode="contain" />
+        ? <Image accessibilityLabel={`${name} demonstration`} source={frames[f]} style={s.img} resizeMode="cover" />
         : <Ionicons name={rest ? 'walk' : 'fitness'} size={72} color={c.muted} />}
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  box: { width: '100%', height: 220, borderRadius: r.lg, backgroundColor: c.card, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  box: { width: '100%', aspectRatio: 1.5, borderRadius: r.lg, backgroundColor: c.card, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   img: { width: '100%', height: '100%' },
 });
