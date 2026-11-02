@@ -2,11 +2,11 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Bar, Btn, Card, Ionicons, Title } from '../components/ui.tsx';
 import { dietPlan } from '../lib/diet.ts';
 import { c, font, sp } from '../theme.ts';
-import type { Profile } from '../types.ts';
+import type { CustomMeal, Profile } from '../types.ts';
 
 const ICON = { Breakfast: 'sunny', Lunch: 'restaurant', Snack: 'cafe', Dinner: 'moon' } as const;
 
-export function Diet({ p, cur, now, goPlan }: { p: Profile; cur: number; now: number; goPlan: () => void }) {
+export function Diet({ p, meals, cur, now, goPlan }: { p: Profile; meals: CustomMeal[]; cur: number; now: number; goPlan: () => void }) {
   const d = dietPlan(p, cur, Math.floor(now / 864e5)); // rotates daily
   if (!d) return (
     <View style={[x.pad, { justifyContent: 'center', flex: 1 }]}>
@@ -38,6 +38,13 @@ export function Diet({ p, cur, now, goPlan }: { p: Profile; cur: number; now: nu
             <View style={x.row}><Ionicons name={ICON[m.name as keyof typeof ICON]} size={20} color={c.primary} /><Text style={x.h2}>{m.name}</Text></View>
             <Text style={x.sub}>~{m.kcal} kcal</Text>
           </View>
+          <Text style={x.item}>{m.food}</Text>
+        </Card>
+      ))}
+      {meals.length > 0 && <Title>My meals</Title>}
+      {meals.map((m, i) => (
+        <Card key={i}>
+          <View style={x.rowB}><Text style={x.h2}>{m.name} · {m.time}</Text><Text style={x.sub}>~{m.kcal} kcal</Text></View>
           <Text style={x.item}>{m.food}</Text>
         </Card>
       ))}

@@ -1,5 +1,5 @@
 import a from 'node:assert';
-import { buildWalkRun, buildWorkout, streak } from './plan.ts';
+import { buildCustom, buildWalkRun, buildWorkout, streak } from './plan.ts';
 
 const w = buildWorkout('intermediate', 20);
 a(w.steps.length > 4 && w.steps[0].name.startsWith('Warm'));
@@ -15,3 +15,6 @@ a(wr.steps.some((x) => x.name === 'Run') && wr.steps.some((x) => x.rest));
 a(wr.steps.reduce((n, x) => n + x.secs, 0) <= 20 * 60);
 a(wr.kcal > 0 && buildWalkRun('beginner', 5).steps.length >= 1);
 console.log('ok');
+const cw = buildCustom([{ name: 'Dips', secs: 30 }, { name: 'Crunches', secs: 40 }]);
+a.equal(cw.steps.length, 4);
+a(cw.kcal > 0 && buildCustom([]).steps.length === 0);

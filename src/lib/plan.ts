@@ -1,4 +1,4 @@
-import type { Level, Workout, Step } from '../types.ts';
+import type { CustomEx, Level, Workout, Step } from '../types.ts';
 
 // Pure logic: workout builder, streak, calorie estimate. No RN imports so it can be tested with node.
 
@@ -68,4 +68,10 @@ export function buildWalkRun(level: Level, minutes: number, kg = 70): Workout {
   if (cool) steps.push({ name: 'Easy walk cool-down', secs: cool, rest: true });
   const sec = (rest: boolean) => steps.filter((x) => x.rest === rest).reduce((n, x) => n + x.secs, 0);
   return { steps, kcal: Math.round(kcal(9.8, sec(false) / 60, kg) + kcal(3.8, sec(true) / 60, kg)) };
+}
+
+// User's own exercise list: each one followed by a 20s rest. MET 5 = generic moderate bodyweight effort.
+export function buildCustom(ex: CustomEx[], kg = 70): Workout {
+  const steps: Step[] = ex.flatMap((e) => [{ name: e.name, secs: e.secs, rest: false }, { name: 'Rest', secs: 20, rest: true }]);
+  return { steps, kcal: kcal(5, steps.reduce((n, x) => n + x.secs, 0) / 60, kg) };
 }

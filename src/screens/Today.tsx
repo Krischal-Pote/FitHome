@@ -2,15 +2,15 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Bar, Btn, Card, Chip, Ionicons, Title } from '../components/ui.tsx';
 import { dietPlan } from '../lib/diet.ts';
-import { buildWalkRun, buildWorkout, day, streak } from '../lib/plan.ts';
+import { buildCustom, buildWalkRun, buildWorkout, day, streak } from '../lib/plan.ts';
 import { c, font, sp } from '../theme.ts';
-import type { Profile, State, Workout } from '../types.ts';
+import type { CustomEx, Profile, State, Workout } from '../types.ts';
 
 const L = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-export function Today({ s, p, cur, now, onStart, goDiet }: { s: State; p: Profile; cur: number; now: number; onStart: (w: Workout) => void; goDiet: () => void }) {
-  const [mode, setMode] = useState<'strength' | 'cardio'>('strength');
-  const w = (mode === 'cardio' ? buildWalkRun : buildWorkout)(p.level, p.minutes, cur);
+export function Today({ s, p, custom, cur, now, onStart, goDiet }: { s: State; p: Profile; custom: CustomEx[]; cur: number; now: number; onStart: (w: Workout) => void; goDiet: () => void }) {
+  const [mode, setMode] = useState<'strength' | 'cardio' | 'mine'>('strength');
+  const w = mode === 'mine' ? buildCustom(custom, cur) : (mode === 'cardio' ? buildWalkRun : buildWorkout)(p.level, p.minutes, cur);
   const doneToday = s.done.includes(day());
   const left = cur - p.goal;
   const diet = dietPlan(p, cur);
@@ -40,9 +40,10 @@ export function Today({ s, p, cur, now, onStart, goDiet }: { s: State; p: Profil
         <View style={t.week}>
           <Chip on={mode === 'strength'} label="Bodyweight" onPress={() => setMode('strength')} />
           <Chip on={mode === 'cardio'} label="Walk & run" onPress={() => setMode('cardio')} />
+          {custom.length > 0 && <Chip on={mode === 'mine'} label="Mine" onPress={() => setMode('mine')} />}
         </View>
         <Text style={t.h2}>Today&apos;s workout</Text>
-        <Text style={t.sub}>{p.minutes} min · ~{w.kcal} kcal · {p.level}</Text>
+        <Text style={t.sub}>{mode === 'mine' ? Math.round(w.steps.reduce((n, x) => n + x.secs, 0) / 60) : p.minutes} min · ~{w.kcal} kcal · {mode === 'mine' ? 'custom' : p.level}</Text>
         {(mode === 'cardio' ? w.steps : w.steps.filter((x) => !x.rest)).map((x, i) => (
           <View key={i} style={t.row}><Ionicons name={mode === 'cardio' ? (x.rest ? 'walk' : 'speedometer') : 'barbell'} size={16} color={c.muted} /><Text style={t.item}>{x.name}</Text><Text style={t.sub}>{x.secs}s</Text></View>
         ))}

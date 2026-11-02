@@ -7,17 +7,18 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from './src/components/ui.tsx';
 import { day } from './src/lib/plan.ts';
 import { schedule } from './src/lib/notify.ts';
+import { Mine } from './src/screens/Mine.tsx';
 import { Diet } from './src/screens/Diet.tsx';
 import { Player } from './src/screens/Player.tsx';
 import { Progress } from './src/screens/Progress.tsx';
 import { Setup } from './src/screens/Setup.tsx';
 import { Today } from './src/screens/Today.tsx';
 import { c } from './src/theme.ts';
-import type { Profile, State, Workout } from './src/types.ts';
+import type { Custom, Profile, State, Workout } from './src/types.ts';
 
 const KEY = 'fithome:v1';
 const TABS = [
-  ['today', 'Today', 'flame'], ['diet', 'Diet', 'nutrition'], ['progress', 'Progress', 'stats-chart'], ['plan', 'Plan', 'settings'],
+  ['today', 'Today', 'flame'], ['diet', 'Diet', 'nutrition'], ['progress', 'Progress', 'stats-chart'], ['mine', 'Mine', 'create'], ['plan', 'Plan', 'settings'],
 ] as const;
 type Tab = (typeof TABS)[number][0];
 
@@ -36,7 +37,7 @@ function Main() {
     AsyncStorage.getItem(KEY).then((v) => {
       const n: State = v ? JSON.parse(v) : { profile: null, done: [], weights: [] };
       setS(n);
-      if (n.profile) schedule(n.profile, n.done.includes(day()));
+      if (n.profile) schedule(n.profile, n.done.includes(day()), n.custom?.meals);
     });
   }, []);
   const save = (n: State) => { setS(n); AsyncStorage.setItem(KEY, JSON.stringify(n)); };
@@ -44,7 +45,7 @@ function Main() {
   if (!s || !fontsOk) return <View style={st.root} />;
   const frame = (child: React.ReactNode) => <SafeAreaView style={st.root}><StatusBar style="light" />{child}</SafeAreaView>;
   const saveProfile = async (profile: Profile) => {
-    await schedule(profile, s.done.includes(day()));
+    await schedule(profile, s.done.includes(day()), s.custom?.meals);
     save({ ...s, profile });
     setTab('today');
   };
@@ -52,20 +53,23 @@ function Main() {
   if (run) return <Player w={run} onExit={(finished) => {
     if (finished) {
       save({ ...s, done: [...new Set([...s.done, day()])] });
-      schedule(s.profile!, true);
+      schedule(s.profile!, true, s.custom?.meals);
     }
     setRun(null);
   }} />;
 
   const p = s.profile;
+  const custom = s.custom ?? { ex: [], meals: [] };
+  const saveCustom = (c: Custom) => { save({ ...s, custom: c }); schedule(p, s.done.includes(day()), c.meals); };
   const weights = s.weights ?? [];
   const cur = weights.length ? weights[weights.length - 1].kg : p.kg;
   return frame(
     <>
       <View style={{ flex: 1 }}>
-        {tab === 'today' && <Today s={s} p={p} cur={cur} now={now} onStart={setRun} goDiet={() => setTab('diet')} />}
-        {tab === 'diet' && <Diet p={p} cur={cur} now={now} goPlan={() => setTab('plan')} />}
+        {tab === 'today' && <Today s={s} p={p} custom={custom.ex} cur={cur} now={now} onStart={setRun} goDiet={() => setTab('diet')} />}
+        {tab === 'diet' && <Diet p={p} meals={custom.meals} cur={cur} now={now} goPlan={() => setTab('plan')} />}
         {tab === 'progress' && <Progress weights={weights} start={p.kg} onAdd={(kg) => save({ ...s, weights: [...weights.filter((x) => x.d !== day()), { d: day(), kg }] })} />}
+        {tab === 'mine' && <Mine custom={custom} onSave={saveCustom} />}
         {tab === 'plan' && <Setup init={p} onSave={saveProfile} />}
       </View>
       <View style={st.bar}>

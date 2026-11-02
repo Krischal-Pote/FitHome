@@ -19,4 +19,7 @@ export type Profile = {
 export type Step = { name: string; secs: number; rest: boolean };
 export type Workout = { steps: Step[]; kcal: number };
 export type WeightEntry = { d: string; kg: number };
-export type State = { profile: Profile | null; done: string[]; weights: WeightEntry[] };
+export type CustomEx = { name: string; secs: number };
+export type CustomMeal = { name: string; food: string; kcal: number; time: string }; // time HH:MM = daily reminder
+export type Custom = { ex: CustomEx[]; meals: CustomMeal[] };
+export type State = { profile: Profile | null; done: string[]; weights: WeightEntry[]; custom?: Custom };
