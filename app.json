@@ -38,6 +38,15 @@
             "webpEnabled": false
           }
         }
+      ],
+      "react-native-ble-plx",
+      "expo-sensors",
+      [
+        "react-native-ble-plx",
+        {
+          "neverForLocation": true,
+          "bluetoothAlwaysPermission": "FitHome connects to your fitness watch to show heart rate."
+        }
       ]
     ]
   }

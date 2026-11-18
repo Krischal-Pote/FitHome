@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Activity } from '../components/Activity.tsx';
 import { Bar, Btn, Card, Chip, Ionicons, Title } from '../components/ui.tsx';
 import { dietPlan } from '../lib/diet.ts';
 import { buildCustom, buildWalkRun, buildWorkout, day, streak } from '../lib/plan.ts';
@@ -24,6 +25,7 @@ export function Today({ s, p, custom, cur, now, onStart, goDiet }: { s: State; p
           <Text style={t.sub}>{left > 0 ? `${left.toFixed(1)} kg to goal` : 'Goal reached. Maintain!'}</Text>
         </View>
       </View>
+      <Activity kg={cur} />
       <Card>
         <View style={t.week}>
           {week.map((d) => (
