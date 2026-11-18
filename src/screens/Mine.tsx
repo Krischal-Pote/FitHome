@@ -1,6 +1,8 @@
+import * as DocumentPicker from 'expo-document-picker';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Btn, Card, Ionicons, Label, Title } from '../components/ui.tsx';
+import { readSheet } from '../lib/mealsheet.ts';
 import { c, r, sp } from '../theme.ts';
 import type { Custom } from '../types.ts';
 
@@ -28,6 +30,20 @@ export function Mine({ custom, onSave }: { custom: Custom; onSave: (c: Custom) =
   const [mt, setMt] = useState('08:00');
   const [ei, setEi] = useState<number | null>(null); // index being edited
   const [mi, setMi] = useState<number | null>(null);
+  const [msg, setMsg] = useState('');
+  const importMeals = async () => {
+    try {
+      const res = await DocumentPicker.getDocumentAsync({ type: '*/*', base64: true });
+      const b64 = res.assets?.[0]?.base64;
+      if (res.canceled || !b64) return;
+      const { meals, skipped } = readSheet(b64);
+      if (!meals.length) return setMsg('No valid meal rows found');
+      const key = (m: { name: string; time: string }) => `${m.name}|${m.time}`;
+      const keep = custom.meals.filter((m) => !meals.some((n) => key(n) === key(m)));
+      onSave({ ...custom, meals: [...keep, ...meals].sort((a, b) => a.time.localeCompare(b.time)) });
+      setMsg(`Imported ${meals.length} meals with reminders${skipped ? `, skipped ${skipped} bad rows` : ''}`);
+    } catch (e) { setMsg((e as Error).message); }
+  };
   const okE = en.trim() !== '' && +es > 0;
   const okM = mn.trim() !== '' && mf.trim() !== '' && +mk > 0 && TIME.test(mt);
   return (
@@ -55,6 +71,8 @@ export function Mine({ custom, onSave }: { custom: Custom; onSave: (c: Custom) =
       }} />
 
       <Label>My meals</Label>
+      <Btn ghost icon="cloud-upload" label="Import meals (CSV / Excel)" onPress={importMeals} />
+      <Text style={x.sub}>{msg || 'First row headers: Meal, Time, Food, Kcal. Time like 08:00 or 8:30 pm. Each meal gets a daily reminder.'}</Text>
       {custom.meals.map((m, i) => (
         <Card key={i} style={[x.row, mi === i && x.editing]}>
           <Pressable accessibilityRole="button" accessibilityLabel={`Edit ${m.name}`} onPress={() => { setMi(i); setMn(m.name); setMf(m.food); setMk(String(m.kcal)); setMt(m.time); }} style={x.grow}>

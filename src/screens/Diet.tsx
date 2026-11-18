@@ -8,12 +8,25 @@ const ICON = { Breakfast: 'sunny', Lunch: 'restaurant', Snack: 'cafe', Dinner: '
 
 export function Diet({ p, meals, cur, now, goPlan }: { p: Profile; meals: CustomMeal[]; cur: number; now: number; goPlan: () => void }) {
   const d = dietPlan(p, cur, Math.floor(now / 864e5)); // rotates daily
+  const mine = meals.length > 0 && (
+    <>
+      <Title>My meals</Title>
+      <Text style={x.sub}>{meals.length} meals · ~{meals.reduce((n, m) => n + m.kcal, 0)} kcal/day · daily reminders on</Text>
+      {meals.map((m, i) => (
+        <Card key={i}>
+          <View style={x.rowB}><Text style={x.h2}>{m.name} · {m.time}</Text><Text style={x.sub}>~{m.kcal} kcal</Text></View>
+          <Text style={x.item}>{m.food}</Text>
+        </Card>
+      ))}
+    </>
+  );
   if (!d) return (
-    <View style={[x.pad, { justifyContent: 'center', flex: 1 }]}>
+    <ScrollView contentContainerStyle={[x.pad, !meals.length && { justifyContent: 'center', flexGrow: 1 }]}>
       <Title>Your diet plan</Title>
       <Text style={x.sub}>Add your height, age and sex and we will build a daily calorie and meal plan.</Text>
       <Btn icon="create" label="Add details" onPress={goPlan} />
-    </View>
+      {mine}
+    </ScrollView>
   );
   const goal = p.goal < cur ? 'Lose weight' : p.goal > cur ? 'Gain weight' : 'Maintain';
   const macros = [
@@ -41,13 +54,7 @@ export function Diet({ p, meals, cur, now, goPlan }: { p: Profile; meals: Custom
           <Text style={x.item}>{m.food}</Text>
         </Card>
       ))}
-      {meals.length > 0 && <Title>My meals</Title>}
-      {meals.map((m, i) => (
-        <Card key={i}>
-          <View style={x.rowB}><Text style={x.h2}>{m.name} · {m.time}</Text><Text style={x.sub}>~{m.kcal} kcal</Text></View>
-          <Text style={x.item}>{m.food}</Text>
-        </Card>
-      ))}
+      {mine}
       <Text style={x.sub}>Estimate only. Not medical advice. Menu changes daily.</Text>
     </ScrollView>
   );

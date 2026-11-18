@@ -27,6 +27,7 @@ export function useWatch() {
 
   const get = () => {
     if (!mgr.current) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       mgr.current = new (require('react-native-ble-plx') as typeof import('react-native-ble-plx')).BleManager();
     }
     return mgr.current;
